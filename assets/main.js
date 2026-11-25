@@ -58,6 +58,51 @@
     });
   }
 
+  /* Theme color */
+  var THEME_KEY = "superagent-theme-color";
+  var THEME_LABELS = { mint: "薄荷绿", azure: "蔚蓝", violet: "紫罗兰", amber: "琥珀" };
+  var themeButtons = Array.prototype.slice.call(document.querySelectorAll("[data-theme-option]"));
+  var themeStatus = document.querySelector("[data-theme-status]");
+
+  var applyTheme = function (name, announce) {
+    if (!Object.prototype.hasOwnProperty.call(THEME_LABELS, name)) name = "mint";
+
+    if (name === "mint") {
+      doc.removeAttribute("data-theme");
+    } else {
+      doc.setAttribute("data-theme", name);
+    }
+
+    themeButtons.forEach(function (button) {
+      button.setAttribute("aria-pressed", String(button.getAttribute("data-theme-option") === name));
+    });
+
+    try {
+      localStorage.setItem(THEME_KEY, name);
+    } catch (error) {
+      /* Storage unavailable: the palette still applies for this page view. */
+    }
+
+    if (announce && themeStatus) {
+      themeStatus.textContent = "已切换为" + THEME_LABELS[name] + "配色";
+    }
+  };
+
+  if (themeButtons.length) {
+    themeButtons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        applyTheme(button.getAttribute("data-theme-option"), true);
+      });
+    });
+
+    /* The head bootstrap script may have restored a saved palette before paint. */
+    applyTheme(doc.getAttribute("data-theme") || "mint", false);
+
+    window.addEventListener("storage", function (event) {
+      if (event.key === THEME_KEY) applyTheme(event.newValue || "mint", false);
+    });
+  }
+
   /* Scroll reveal */
   var revealItems = Array.prototype.slice.call(document.querySelectorAll(".reveal"));
   if (revealItems.length) {
